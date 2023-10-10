@@ -8,21 +8,41 @@ const {WSMCommand} = require('./utils/WSMConsoleCommand.js');
 const {GenerateRunnableScript} = require('./utils/GenerateRunnableScript.js');
 //mongo queries
 const {getAccountsWithPendingAccounts} = require('./mongoQueries/aggregates/getAccountsWithPendingAccounts.js');
-//code args
-const args = process.argv.slice(2);
-
+//code yargs
+//const { hideBin } = require('yargs/helpers')
+var argv = require('yargs/yargs')(process.argv.slice(2))
+    .option('organizationId', {
+        alias: 'orgId',
+        demandOption: true,
+        describe: 'Organization Id',
+        type: 'string'
+    })
+    .option('provider', {
+        alias: 'p',
+        demandOption: true,
+        describe: 'Service Type, ex: adwords,bing etc',
+        type: 'string'
+    })
+    .option('accountId', {
+        alias: 'a',
+        demandOption: false,
+        describe: 'If you want to generate an output if a specific account, you can add account Id',
+        type: 'string'
+    })
+    .argv;
 //reading dot env variable
 mongoDBInsightsCoreURL = process.env.MONGODB_INSIGHTS_CORE || "";
 
 const main = async () => {
 
-    if(args.length == 0){
-        outputWarning("Parameters have not been provided. example: node checkPendingAccountsRetryDownload.js {orgId} {serviceType}");
+    let organizationId = argv.orgId;
+    let serviceType = argv.provider;
+    let accountId = argv.accountId;
+
+    if(!organizationId || !serviceType){
+        outputWarning("Parameters have not been provided. example: node checkPendingAccountsRetryDownload.js --orgId={orgId} provider={serviceType}");
         return;
     }
-
-    let organizationId = args[0];
-    let serviceType = args[1];
 
     const coreDocumentManager = new DocumentManager(mongoDBInsightsCoreURL,"insights_core");
     await coreDocumentManager.connect();
@@ -59,6 +79,10 @@ const main = async () => {
                 commandSet.add(command);
         });
         
+        if(accountId){
+            downloadAccountData = downloadAccountData.filter((element) => {element.accountId === accountId});
+        }
+
         new CSVConverter().writeCSVFile(`${organizationId}_pending_accounts_report.csv`,downloadAccountData);
         //generate runnable script
         //'./templates/runCommandTemplate.js'
