@@ -73,6 +73,8 @@ class DocumentManager{
         if (!this.isConnectionOpen) {
             throw new Error("There is no Connection established");
         }
+
+        return true;
     }
 
     validateIdProperty(query) {

@@ -3,10 +3,8 @@ require('dotenv').config();
 const {DateTime} = require('luxon');
 //local imports
 const {DocumentManager} =  require('./utils/DocumentManager.js');
-const {outputWarning , outputError , outputInformative , outputMessage} = require('./utils/ConsoleUtils.js');
+const { outputError , outputInformative } = require('./utils/ConsoleUtils.js');
 const {CSVConverter} = require('./utils/CSVConverter.js');
-const {WSMCommand} = require('./utils/WSMConsoleCommand.js');
-const {GenerateRunnableScript} = require('./utils/GenerateRunnableScript.js');
 //Mongo queries
 const {getMetrics} = require('./mongoQueries/queries/getMetricsBySegmentQuery.js');
 //yargs declaration
@@ -65,10 +63,10 @@ const main = async() => {
     let endDate = argv.endDate ? DateTime.fromISO(argv.endDate) : DateTime.now().endOf('day');
 
     const coreDocumentManager = new DocumentManager(mongoDBInsightsCoreURL,"insights_core");
-    await coreDocumentManager.connect();
 
     try{
         
+        await coreDocumentManager.connect();
         let organization = await coreDocumentManager.findOne("organizations",{'_id':organizationId},true);
 
         if(!organization){
