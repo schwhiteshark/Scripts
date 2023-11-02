@@ -47,8 +47,11 @@ class DocumentManager{
         this.db = this.client.db(db);
     }
     
-    async findAll(collectionName, query = {}) {
+    async findAll(collectionName, query = {},omitIdValidation=false) {
         this.checkConnectionStatus();
+        if(!omitIdValidation){
+            query = this.validateIdProperty(query);
+        }
         query = this.validateIdProperty(query);
         const collection = this.db.collection(collectionName);
         return await collection.find(query).toArray();
