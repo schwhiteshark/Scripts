@@ -4,7 +4,6 @@ function getAccountsWithPendingAccounts(serviceType){
         {
             '$match':{
                 'accounts.accountId':{'$regex':serviceType,'$options':'i'},
-                'accounts.status':{'$ne':'DONE'}
             }
         },
         {
